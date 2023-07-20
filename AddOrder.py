@@ -137,12 +137,9 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
     for i in orderedItemPrice:
         itemID, item_price_input = list(i.items())[0]
 
-        # Converts list of tup to str
-        temp_item_name_input_List = SelectNameSpecifiedItem(itemID)
-        temp_item_name_input_Tup = temp_item_name_input_List[0]
-        item_name_input = temp_item_name_input_Tup[0]
+        item_name_input = SelectNameSpecifiedItem(itemID)
 
-        newOrderedItemID = InsertItemsPerOrderSQL(newOrderID, itemID, item_price_input, str(item_name_input))
+        newOrderedItemID = InsertItemsPerOrderSQL(newOrderID, itemID, item_price_input, item_name_input)
 
         # prints error message if failed
         if isinstance(newOrderedItemID, int):

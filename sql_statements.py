@@ -124,7 +124,7 @@ def SelectNamePriceSpecifiedItem(item_input):
 def SelectNameSpecifiedItem(item_input): # KEEP
     query = "select Name from Item where ID = (?)"
     result = QueryDB(query, item_input)
-    return result
+    return result[0][0]
 
 
 def SelectModIDSpecifiedModType(name, type_input): # KEEP
