@@ -57,37 +57,46 @@ def ChooseModOrder(sender, app_data, user_data):
             dpg.add_listbox(label=i[1], items=modList, user_data=i[0], callback=AddMod)
 
         dpg.add_text("or add special instructions:")
-        dpg.add_input_text(label="Special Mod", user_data=None, tag="Special Mod")
-        dpg.add_button(label="Add Special Mod", user_data=dpg.get_value("Special Mod"), callback=AddSpecialMod)
+        dpg.add_input_text(label="Custom Mod", user_data=None, tag="Custom Mod")
+        dpg.add_button(label="Add Custom Mod", user_data=None, callback=AddCustomMod)
 
         dpg.add_button(label="Add Item to Order", user_data=item_input, callback=AddItemToOrder)
         dpg.add_button(label="Order Complete", user_data=None, callback=CompleteOrder)
         dpg.add_button(label="Go Back to Items", callback=lambda: dpg.delete_item("Mod Menu"))
 
 
-def AddSpecialMod(sender, app_data, user_data):
-    text = dpg.get_value("Special Mod")
-    print(text)
-
-    # How to Add Special Mod to Order Tables???????
-
-
 def AddMod(sender, app_data, user_data):
     name = dpg.get_value(sender)
-
-    # Adds mod to orderedItem Dict
-    tempModIDList = SelectModIDSpecifiedModType(name, user_data)
-    # Converts list value to int
-    modIDList = tempModIDList[0]
-    modID = modIDList[0]
+    # Adds mod to orderedItem Dic
+    modID = SelectModIDSpecifiedModType(name, user_data)
     tempModsList.append(modID)
 
     # Adds AddedCost to tempCostList
-    temModCostList = SelectModCostSpecifiedModType(name, user_data)
-    # Converts list to float
-    modCostList = temModCostList[0]
-    modCost = modCostList[0]
+    modCost = SelectModCostSpecifiedModType(name, user_data)
     tempCostList.append(modCost)
+
+
+def AddCustomMod(sender, app_data, user_data):
+    # Checks if mod is custom
+    description = dpg.get_value("Custom Mod")
+
+    # If it is, Add Custom Mod to table (if not exists)
+    testCustomModIDExists = SelectExistingCustomMod(description)
+    print(testCustomModIDExists)
+    if not testCustomModIDExists:
+        message = InsertCustomModSQL(description)
+    else:
+        message = testCustomModIDExists
+
+    # Confirms added to order
+    with dpg.window(label="Add Custom Mod Confirm", width=400, height=100, tag="Add Custom Mod Confirm"):
+        dpg.add_text("Custom Mod = " + str(message))
+
+        dpg.add_button(label="Close", user_data=None, callback=lambda: dpg.delete_item("Add Custom Mod Confirm"))
+
+    # Add "Custom Mod" ID to modsList
+    modID = SelectCustomModID()
+    tempModsList.append(modID)
 
 
 def AddItemToOrder(sender, app_data, user_data):
@@ -123,12 +132,8 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
     order_price_input = sum(order_price_input_list)
 
     # Retrieve and Assign Date and Time Values (converts from list of tup to str)
-    tempDateList = SelectDate()
-    tempDateTup = tempDateList[0]
-    date_input = tempDateTup[0]
-    tempTimeList = SelectTime()
-    tempTimeTup = tempTimeList[0]
-    time_input = tempTimeTup[0]
+    date_input = SelectDate()
+    time_input = SelectTime()
 
     # Insert into Order Table
     newOrderID = InsertOrderSQL(str(date_input), str(time_input), order_price_input)
@@ -138,7 +143,6 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
         itemID, item_price_input = list(i.items())[0]
 
         item_name_input = SelectNameSpecifiedItem(itemID)
-
         newOrderedItemID = InsertItemsPerOrderSQL(newOrderID, itemID, item_price_input, item_name_input)
 
         # prints error message if failed
@@ -152,12 +156,7 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
             itemID, modList = list(j.items())[0]
             for k in modList:
                 modID = k
-
-                # converts list of tup to str
-                tempNameList = SelectNameCostSpecifiedMod(modID)
-                tempNameTup = tempNameList[0]
-                name = tempNameTup[0]
-
+                name = SelectNameCostSpecifiedMod(modID)
                 result = InsertModsPerOrderedItemSQL(newOrderedItemID, modID, name)
 
                 # prints error message if failed

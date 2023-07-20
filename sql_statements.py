@@ -58,13 +58,13 @@ def InsertQueryDB(query, *args):
 def SelectDate():
     query = "select date('now','localtime')"
     date = QueryDB(query)
-    return date
+    return date[0][0]
 
 
 def SelectTime():
     query = "select time('now','localtime')"
     time = QueryDB(query)
-    return time
+    return time[0][0]
 
 
 def SelectAllMenuCatSQL():
@@ -98,7 +98,7 @@ def SelectNameCostSpecifiedMod(mod_input):
     # Displays specific Mod info
     query = "select Name, AddedCost from Item_Mod where ID = (?)"
     result = QueryDB(query, mod_input)
-    return result
+    return result[0][0]
 
 
 def SelectIDNameItem(cat_input):
@@ -130,13 +130,25 @@ def SelectNameSpecifiedItem(item_input): # KEEP
 def SelectModIDSpecifiedModType(name, type_input): # KEEP
     query = "select ID from Item_Mod where Name = (?) and ItemModTypeID = (?)"
     result = QueryDB(query, name, type_input)
-    return result
+    return result[0][0]
 
 
 def SelectModCostSpecifiedModType(name, type_input): # KEEP
     query = "select AddedCost from Item_Mod where Name = (?) and ItemModTypeID = (?)"
     result = QueryDB(query, name, type_input)
-    return result
+    return result[0][0]
+
+
+def SelectExistingCustomMod(description):
+    query = "select ID from Custom_Mod where Description like (?)"
+    result = QueryDB(query, description)
+    return result[0][0]
+
+
+def SelectCustomModID():
+    query = "Select ID from Item_MOD where (Name) = ('Custom Mod')"
+    result = QueryDB(query)
+    return result[0][0]
 
 # ############# VERIFY STATEMENTS ######################
 
@@ -234,6 +246,13 @@ def InsertModsPerOrderedItemSQL(OrderedItemID_input, itemModID_input, name_input
     # Insert into ModsPerOrderedItem Table
     query = "INSERT INTO Mods_Per_Ordered_Item (OrderedItemID, ItemModID, ItemModName) VALUES (?,?,?)"
     result = InsertQueryDB(query, OrderedItemID_input, itemModID_input, name_input)
+    return result
+
+
+def InsertCustomModSQL(description_input): # AUTO FILLS IN CUSTOM MOD ID '97'
+    customModID = SelectCustomModID()
+    query = "INSERT INTO Custom_Mod (CustomModID, Description) VALUES (?, ?)"
+    result = InsertQueryDB(query, customModID, description_input)
     return result
 
 # ############# UPDATE STATEMENTS ######################
