@@ -1,5 +1,5 @@
 # Elizabeth Vickerman- KeyCoffee Project
-# Last Edited 7/17/23
+# Last Edited 7/27/23
 # Module file to define Add Order Functions
 
 
@@ -9,9 +9,11 @@ import dearpygui.dearpygui as dpg
 # list of dicts
 orderedItemMods = []
 orderedItemPrice = []
+
 # list of ints
 tempModsList = []
 tempCostList = []
+customModsList = []
 
 
 def ChooseCatOrder():
@@ -74,6 +76,7 @@ def AddMod(sender, app_data, user_data):
     # Adds AddedCost to tempCostList
     modCost = SelectModCostSpecifiedModType(name, user_data)
     tempCostList.append(modCost)
+# When multiple mods added, bug occurs
 
 
 def AddCustomMod(sender, app_data, user_data):
@@ -82,21 +85,25 @@ def AddCustomMod(sender, app_data, user_data):
 
     # If it is, Add Custom Mod to table (if not exists)
     testCustomModIDExists = SelectExistingCustomMod(description)
-    print(testCustomModIDExists)
     if not testCustomModIDExists:
-        message = InsertCustomModSQL(description)
+        CustomModID = InsertCustomModSQL(description)
     else:
-        message = testCustomModIDExists
+        CustomModID = testCustomModIDExists[0][0]
 
     # Confirms added to order
     with dpg.window(label="Add Custom Mod Confirm", width=400, height=100, tag="Add Custom Mod Confirm"):
-        dpg.add_text("Custom Mod = " + str(message))
+        dpg.add_text("Custom Mod = " + str(CustomModID))
 
         dpg.add_button(label="Close", user_data=None, callback=lambda: dpg.delete_item("Add Custom Mod Confirm"))
 
     # Add "Custom Mod" ID to modsList
     modID = SelectCustomModID()
     tempModsList.append(modID)
+
+    # Add Custom Mod Desc to list
+    customModsList.append(CustomModID)
+
+# ### Add CustomModID to Mods_Per_Ordered_Item
 
 
 def AddItemToOrder(sender, app_data, user_data):
@@ -126,6 +133,9 @@ def AddItemToOrder(sender, app_data, user_data):
 
 
 def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
+    print(orderedItemPrice)
+    print(orderedItemMods)
+    print(customModsList)
     order_price_input_list = []
     for i in orderedItemPrice:
         order_price_input_list.append(sum(i.values()))
@@ -139,31 +149,48 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
     newOrderID = InsertOrderSQL(str(date_input), str(time_input), order_price_input)
 
     # # Insert into Items per Order Table
+    j = 0
     for i in orderedItemPrice:
-        itemID, item_price_input = list(i.items())[0]
+        print(i)
+        itemID = list(i.keys())[0]
+        item_price_input = list(i.values())[0]
 
         item_name_input = SelectNameSpecifiedItem(itemID)
         newOrderedItemID = InsertItemsPerOrderSQL(newOrderID, itemID, item_price_input, item_name_input)
+        print("Item " + str(itemID) + " added to Ordered Item Table")
 
         # prints error message if failed
         if isinstance(newOrderedItemID, int):
-            pass
-        else:
-            newOrderID = newOrderedItemID
-
-        # Insert into Mods Per Ordered Item Table
-        for j in orderedItemMods:
-            itemID, modList = list(j.items())[0]
+            # Insert into Mods Per Ordered Item Table
+            itemCustomModID = SelectCustomModID()
+            itemID, modList = list(orderedItemMods[j].items())[0]
             for k in modList:
                 modID = k
-                name = SelectNameCostSpecifiedMod(modID)
-                result = InsertModsPerOrderedItemSQL(newOrderedItemID, modID, name)
+                print(modID)
+                # Adds Custom Mod if present
+                if modID == itemCustomModID:
+                    name = 'Custom ID'
+                    print(customModsList)
+                    customID = customModsList.pop(0)
+                    result = InsertModsPerOrderedItemCustomSQL(newOrderedItemID, modID, name, customID)
+                    print("Custom Mod added to table")
+                else:
+                    name = SelectNameCostSpecifiedMod(modID)
+                    result = InsertModsPerOrderedItemSQL(newOrderedItemID, modID, name)
+                    print("Mod added to table")
 
                 # prints error message if failed
                 if isinstance(result, int):
                     pass
                 else:
                     newOrderID = result
+            j += 1
+        else:
+            newOrderID = newOrderedItemID
+
+    # Clear Order lists
+    orderedItemMods.clear()
+    orderedItemPrice.clear()
 
     with dpg.window(label="Insert Order", width=600, height=300, tag="Insert Order"):
         dpg.add_text("Order successfully added and new ID = " + str(newOrderID))

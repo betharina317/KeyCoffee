@@ -1,5 +1,5 @@
 # Elizabeth Vickerman- KeyCoffee Project
-# Last Edited 7/11/23
+# Last Edited 7/27/23
 # Module file to define SQL Functions
 
 import sqlite3
@@ -142,13 +142,34 @@ def SelectModCostSpecifiedModType(name, type_input): # KEEP
 def SelectExistingCustomMod(description):
     query = "select ID from Custom_Mod where Description like (?)"
     result = QueryDB(query, description)
-    return result[0][0]
+    return result
 
 
 def SelectCustomModID():
     query = "Select ID from Item_MOD where (Name) = ('Custom Mod')"
     result = QueryDB(query)
     return result[0][0]
+
+
+def SelectOrdersForDateRange(startDate, endDate):
+    query = "Select * from Orders where Date between (?) and (?)"
+    result = QueryDB(query, startDate, endDate)
+    return result
+
+
+def SelectOrdersItemsMods():
+    query = "select OrderID, Date, Time, ItemID, MenuItemName, ItemPrice, group_concat(ItemModName), CustomModName " \
+            "from " \
+            "(select o.ID as OrderID, Date, Time, i.ID as ItemID, MenuItemName, i.TotalPrice as ItemPrice, " \
+            "ItemModName, c.Description as CustomModName " \
+            "from Orders as o " \
+            "inner join Items_Per_Order as i on o.ID = i.OrderID " \
+            "inner join Mods_Per_Ordered_Item as m on i.ID = m.OrderedITemID " \
+            "left join Custom_Mod as c on m.CustomModID = c.ID) " \
+            "group by OrderID, ItemID"
+            # "where Date between (?) and (?)"
+    result = QueryDB(query)
+    return result
 
 # ############# VERIFY STATEMENTS ######################
 
@@ -249,9 +270,16 @@ def InsertModsPerOrderedItemSQL(OrderedItemID_input, itemModID_input, name_input
     return result
 
 
+def InsertModsPerOrderedItemCustomSQL(OrderedItemID_input, itemModID_input, name_input, custom_input):
+    # Insert into ModsPerOrderedItem Table
+    query = "INSERT INTO Mods_Per_Ordered_Item (OrderedItemID, ItemModID, ItemModName, CustomModID) VALUES (?,?,?,?)"
+    result = InsertQueryDB(query, OrderedItemID_input, itemModID_input, name_input, custom_input)
+    return result
+
+
 def InsertCustomModSQL(description_input): # AUTO FILLS IN CUSTOM MOD ID '97'
     customModID = SelectCustomModID()
-    query = "INSERT INTO Custom_Mod (CustomModID, Description) VALUES (?, ?)"
+    query = "INSERT INTO Custom_Mod (ItemModCustomID, Description) VALUES (?, ?)"
     result = InsertQueryDB(query, customModID, description_input)
     return result
 

@@ -68,14 +68,14 @@ def AddItem():
 
 def InsertItem(sender, app_data, user_data):
     with dpg.window(label="Show Items", width=600, height=300, tag="Show Items"):
-        #Show current items
+        # Show current items
         dpg.add_text("Current items in this category:")
         cat_input = user_data[0]
         itemList = SelectIDNameItem(cat_input)
         for i in itemList:
             dpg.add_text(i)
 
-        #Add new item info
+        # Add new item info
         dpg.add_text("Enter name of new item: ")
         dpg.add_input_text(tag="name_input")
         dpg.add_text("Enter price of new item: ")
@@ -134,7 +134,7 @@ def InsertMods(sender, app_data, user_data):
 
 # This function called from multiple functions (re-used)
 def InsertModConfirm(sender, app_data, user_data):
-    #Insert Mod info into DB
+    # Insert Mod info into DB
     type_ID_input = user_data
     mod_name_input = dpg.get_value("mod_name_input")
     added_cost_input = dpg.get_value("added_cost_input")
