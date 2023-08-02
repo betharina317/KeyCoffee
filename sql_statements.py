@@ -3,7 +3,10 @@
 # Module file to define SQL Functions
 
 import sqlite3
-import datetime
+import logging
+
+logging.basicConfig(filename='KeyCoffee.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',
+                    level=logging.DEBUG)
 
 
 # Re-Usable Code Example!!!
@@ -22,6 +25,7 @@ def QueryDB(query, *args):
 
     except sqlite3.Error as error:
         errorMess = ("Error while connecting to sqlite: ", error)
+        logging.debug(errorMess)
         return errorMess
 
     finally:
@@ -45,6 +49,7 @@ def InsertQueryDB(query, *args):
 
     except sqlite3.Error as error:
         errorMess = ("Error while connecting to sqlite: ", error)
+        logging.debug(errorMess)
         return errorMess
 
     finally:
@@ -157,18 +162,41 @@ def SelectOrdersForDateRange(startDate, endDate):
     return result
 
 
-def SelectOrdersItemsMods():
-    query = "select OrderID, Date, Time, ItemID, MenuItemName, ItemPrice, group_concat(ItemModName), CustomModName " \
-            "from " \
+def SelectOrdersItemsMods(startDate, endDate):
+    query = "select OrderID, Date, Time, ItemID, MenuItemName, ItemPrice, group_concat(ItemModName) from " \
             "(select o.ID as OrderID, Date, Time, i.ID as ItemID, MenuItemName, i.TotalPrice as ItemPrice, " \
-            "ItemModName, c.Description as CustomModName " \
-            "from Orders as o " \
+            "ItemModName from Orders as o " \
             "inner join Items_Per_Order as i on o.ID = i.OrderID " \
             "inner join Mods_Per_Ordered_Item as m on i.ID = m.OrderedITemID " \
-            "left join Custom_Mod as c on m.CustomModID = c.ID) " \
+            "where Date between (?) and (?))" \
             "group by OrderID, ItemID"
-            # "where Date between (?) and (?)"
-    result = QueryDB(query)
+
+    result = QueryDB(query, startDate, endDate)
+    return result
+
+
+def SelectCustomMods(startDate, endDate):
+    query = "select o.ID as OrderID, Date, Time, i.ID as ItemID, MenuItemName, CustomModID, " \
+            "c.Description as CustomModName from Orders as o " \
+            "inner join Items_Per_Order as i on o.ID = i.OrderID " \
+            "inner join Mods_Per_Ordered_Item as m on i.ID = m.OrderedITemID " \
+            "inner join Custom_Mod as c on m.CustomModID = c.ID " \
+            "where Date between (?) and (?)" \
+            "group by OrderID, ItemID"
+
+    result = QueryDB(query, startDate, endDate)
+    return result
+
+
+def SelectMostFrequentCustomMod(startDate, endDate):
+    query = "select Description, count(*) as Count from Mods_Per_Ordered_Item as m " \
+            "inner join Custom_Mod as c on m.CustomModID = c.ID " \
+            "inner join Items_Per_Order as i on m.OrderedItemID = i.ID " \
+            "inner join Orders as o on i.OrderID = o.ID " \
+            "where Date between (?) and (?) " \
+            "group by Description order by count(*) desc"
+
+    result = QueryDB(query, startDate, endDate)
     return result
 
 # ############# VERIFY STATEMENTS ######################

@@ -1,0 +1,4 @@
+# Elizabeth Vickerman- KeyCoffee Project
+# Error logging file
+
+08/01/2023 10:45:37 AM ('Error while connecting to sqlite: ', OperationalError('no such table: Menu_Cate_LU'))

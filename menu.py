@@ -10,16 +10,19 @@ import dearpygui.dearpygui as dpg
 
 # Menu Function
 def Menu():
-    dpg.create_context()
-    dpg.create_viewport(title='Key Coffee POS', width=600, height=400)
+    try:
+        dpg.create_context()
+        dpg.create_viewport(title='Key Coffee POS', width=600, height=400)
 
-    with dpg.window(tag="Main Menu"):
-        dpg.add_button(label="Modify Menu", callback=ChooseCat, tag="Modify Menu")
-        dpg.add_button(label="Add Order", callback=ChooseCatOrder, tag="Add Order")
-        dpg.add_button(label="Download Reports", callback=ReportsMenu, tag="Download Reports")
+        with dpg.window(tag="Main Menu"):
+            dpg.add_button(label="Modify Menu", callback=ChooseCat, tag="Modify Menu")
+            dpg.add_button(label="Add Order", callback=ChooseCatOrder, tag="Add Order")
+            dpg.add_button(label="Download Reports", callback=ReportsMenu, tag="Download Reports")
 
-    dpg.set_primary_window("Main Menu", True)
-    dpg.setup_dearpygui()
-    dpg.show_viewport()
-    dpg.start_dearpygui()
-    dpg.destroy_context()
+        dpg.set_primary_window("Main Menu", True)
+        dpg.setup_dearpygui()
+        dpg.show_viewport()
+        dpg.start_dearpygui()
+        dpg.destroy_context()
+    except Exception as e:
+        logging.debug("Error: %r", e)
