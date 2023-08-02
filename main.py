@@ -2,14 +2,10 @@ from menu import *
 import dearpygui.dearpygui as dpg
 import dearpygui.demo as demo
 
-from PasswordFunctions import *
-
-pin = "1235"
 
 
-print(VerifyLogin(pin, filepath))
 # Main
-# Menu()
+Menu()
 
 # # dpg demo
 # dpg.create_context()
