@@ -5,6 +5,8 @@
 import dearpygui.dearpygui as dpg
 from sql_statements import *
 
+# #### How to delete windows in callback function with additional function???
+
 # !!!!! filepath will need changed with new user!!!!!
 filepath = r"C:\Users\Andrew\PycharmProjects\KeyCoffee\Passwords.txt"
 
@@ -47,10 +49,13 @@ def VerifyLoginWindow(sender, app_data, user_data):
 
         try:
             pin = dpg.get_value("Pin Verification")
+            print(user_data)
+
             # Passes function from main menu as user_data
             if VerifyLogin(pin, filepath):
                 dpg.add_text("Verified Authorization.")
                 dpg.add_button(label="Continue", user_data=None, callback=user_data)
+                dpg.delete_item("Enter Login Window")
 
             else:
                 dpg.add_text("Pin Invalid.  Access Denied.")

@@ -55,6 +55,7 @@ def ChooseModOrder(sender, app_data, user_data):
         modTypeList = SelectAllSpecifiedModType(item_input)
 
         with dpg.window(label="Mod Menu", width=600, height=300, tag="Mod Menu"):
+            dpg.delete_item("Item Menu")
             dpg.add_text("Select modifications for item:")
 
             # Create listbox for every mod type containing mods under selected item
@@ -71,7 +72,7 @@ def ChooseModOrder(sender, app_data, user_data):
 
             dpg.add_button(label="Add Item to Order", user_data=item_input, callback=AddItemToOrder)
             dpg.add_button(label="Order Complete", user_data=None, callback=CompleteOrder)
-            dpg.add_button(label="Go Back to Items", callback=lambda: dpg.delete_item("Mod Menu"))
+            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Mod Menu"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -88,7 +89,6 @@ def AddMod(sender, app_data, user_data):
         tempCostList.append(modCost)
     except Exception as e:
         logging.debug("Error: %r", e)
-
 
 
 def AddCustomMod(sender, app_data, user_data):

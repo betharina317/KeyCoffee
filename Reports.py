@@ -12,7 +12,9 @@ downloads_path = str(Path.home() / "Downloads")
 
 
 def ReportsMenu(sender, app_data, user_data):
+
     try:
+        dpg.delete_item("Verify Login Window")
         with dpg.window(label="Reports Menu", width=400, height=150, tag="Reports Menu"):
             dpg.add_button(label="Revenue Report", callback=GenTransReport, tag="Revenue Report")
             dpg.add_button(label="Order Details Report", callback=GenOrderDetailsReport, tag="Order Details Report")

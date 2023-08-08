@@ -8,6 +8,8 @@ import dearpygui.dearpygui as dpg
 
 # ############### Modify Item Main Windows #########
 def ChooseCat():
+    # Delete previous window
+    dpg.delete_item("Verify Login Window")
     with dpg.window(label="Cat Menu", width=600, height=300, tag="Cat Menu"):
         dpg.add_text("Select which category describes the item you want to modify,")
         dpg.add_text("or select Add Item: ")
@@ -45,6 +47,7 @@ def ChooseItem(sender, app_data, user_data):
 def DeleteOrModify(sender, app_data, user_data):
     try:
         itemID = int(user_data[0])
+        dpg.delete_item("Item Menu")
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -55,7 +58,7 @@ def DeleteOrModify(sender, app_data, user_data):
         dpg.add_button(label="Modify Item", user_data=itemID, callback=ModifyItem)
         dpg.add_button(label="Modify Item Mod Types", user_data=itemID, callback=ChooseModType)
         dpg.add_button(label="Modify Item Mods", user_data=itemID, callback=ChooseModTypeForMod)
-        dpg.add_button(label="Go Back to Items", callback=lambda: dpg.delete_item("Delete Or Modify"))
+        dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Delete Or Modify"))
 
 
 # ########## Add Item Windows ############################
@@ -77,6 +80,7 @@ def AddItem():
 
 def InsertItem(sender, app_data, user_data):
     try:
+        dpg.delete_item("New Cat Menu")
         with dpg.window(label="Show Items", width=600, height=300, tag="Show Items"):
             # Show current items
             dpg.add_text("Current items in this category:")
@@ -93,7 +97,7 @@ def InsertItem(sender, app_data, user_data):
             dpg.add_input_text(tag="price_input", decimal=True)
             dpg.add_button(label="Add Item", user_data=user_data, callback=InsertModType)
 
-            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Show Items"))
+            dpg.add_button(label="Go Back to Modify Menu", callback=lambda: dpg.delete_item("Show Items"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -112,6 +116,7 @@ def InsertModType(sender, app_data, user_data):
         InsertItemModSQL(hereItemTypeID, "To Go", 0)
 
         with dpg.window(label="Insert Mod Type", width=600, height=300, tag="Insert Mod Type"):
+            dpg.delete_item("Show Items")
             dpg.add_text("Item successfully added and new ID = " + str(newItemID))
 
             # Enter new mod type info
@@ -119,10 +124,11 @@ def InsertModType(sender, app_data, user_data):
             dpg.add_input_text(tag="type_name_input")
             dpg.add_button(label="Add Mod Type", user_data=newItemID, callback=InsertMods)
 
-            dpg.add_button(label="Go Back to Add Item", user_data=None,
+            dpg.add_button(label="Go Back to Modify Menu", user_data=None,
                            callback=lambda: dpg.delete_item("Insert Mod Type"))
     except Exception as e:
         logging.debug("Error: %r", e)
+
 
 # This function called from multiple functions (re-used)
 def InsertMods(sender, app_data, user_data):
@@ -180,13 +186,12 @@ def DeleteItem(sender, app_data, user_data):
             message = "Issue deleting item: " + str(errMessage)
         else:
             message = "Item number " + str(user_data) + " successfully deleted\n" \
-                        "Unable to modify item that doesn't exist.\n" \
-                        "Return to category menu to reflect changes."
 
         with dpg.window(label="Delete Confirm", width=600, height=300, tag="Delete Confirm"):
             dpg.add_text(message)
+            dpg.delete_item("Delete Or Modify")
 
-            dpg.add_button(label="Go Back to Modify Item Menu", callback=lambda: dpg.delete_item("Delete Confirm"))
+            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Delete Confirm"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -197,9 +202,9 @@ def DeleteItem(sender, app_data, user_data):
 def ModifyItem(sender, app_data, user_data):
     try:
         itemInfo = SelectNamePriceSpecifiedItem(user_data)
+        dpg.delete_item("Delete Or Modify")
         with dpg.window(label="Modify Item", width=600, height=300, tag="Modify Item"):
             dpg.add_text("Current name and price of item: " + str(itemInfo))
-            dpg.add_text("(Recent changes may not be reflected)\n")
 
             # Enter new info to update specified value in DB
             dpg.add_text("Enter new name for item: ")
@@ -209,7 +214,7 @@ def ModifyItem(sender, app_data, user_data):
             dpg.add_input_text(tag="price_input", decimal=True)
             dpg.add_button(label="Change Price", user_data=user_data, callback=ModifyItemPrice)
 
-            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Item"))
+            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Modify Item"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -229,7 +234,7 @@ def ModifyItemName(sender, app_data, user_data):
             message = errMessage
         with dpg.window(label="Modify Item Name", width=600, height=300, tag="Modify Item Name"):
             dpg.add_text("New name of item: " + str(message))
-
+            dpg.delete_item("Modify Item")
             dpg.add_button(label="Go Back to Modify Item", callback=lambda: dpg.delete_item("Modify Item Name"))
     except Exception as e:
         logging.debug("Error: %r", e)
@@ -250,7 +255,7 @@ def ModifyItemPrice(sender, app_data, user_data):
             message = errMessage
         with dpg.window(label="Modify Item Price", width=600, height=300, tag="Modify Item Price"):
             dpg.add_text("New price of item: " + str(message))
-
+            dpg.delete_item("Modify Item")
             dpg.add_button(label="Go Back to Modify Item", callback=lambda: dpg.delete_item("Modify Item Price"))
     except Exception as e:
         logging.debug("Error: %r", e)
@@ -283,9 +288,9 @@ def ModifyModType(sender, app_data, user_data):
 
         # Show current Mod Type info
         itemInfo = SelectNameSpecifiedModType(type_input)
-        with dpg.window(label="Modify Mod Type", width=600, height=300, tag="Modify Mod Types"):
+        dpg.delete_item("Show Mod Types")
+        with dpg.window(label="Modify Mod Type", width=600, height=300, tag="Modify Mod Type"):
             dpg.add_text("Current name of Mod Type: " + str(itemInfo))
-            dpg.add_text("(Recent changes may not be reflected)\n")
 
             # Offer to delete Mod Type
             dpg.add_text("Delete Mod Type: ")
@@ -296,7 +301,7 @@ def ModifyModType(sender, app_data, user_data):
             dpg.add_input_text(tag="name_input")
             dpg.add_button(label="Change Name", user_data=type_input, callback=ModifyModTypeName)
 
-            dpg.add_button(label="Go Back to Choose Mod Type", callback=lambda: dpg.delete_item("Modify Mod Types"))
+            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Mod Types"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -313,12 +318,12 @@ def DeleteModType(sender, app_data, user_data):
             message = "Issue deleting Mod Type: " + str(errMessage)
         else:
             message = "Mod type number " + str(user_data) + " successfully deleted\n" \
-                        "Unable to modify Mod Type that doesn't exist.\n" \
-                        "Return to Delete or Modify Menu to reflect changes."
 
         with dpg.window(label="Delete Mod Type Confirm", width=600, height=300, tag="Delete Mod Type Confirm"):
             dpg.add_text(message)
-            dpg.add_button(label="Go Back to Modify Mod Type",
+            dpg.delete_item("Modify Mod Type")
+            dpg.delete_item("Show Mod Types")
+            dpg.add_button(label="Go Back to Delete or Modify",
                            callback=lambda: dpg.delete_item("Delete Mod Type Confirm"))
     except Exception as e:
         logging.debug("Error: %r", e)
@@ -339,8 +344,8 @@ def ModifyModTypeName(sender, app_data, user_data):
             message = errMessage
         with dpg.window(label="Modify Mod Type", width=600, height=300, tag="Modify Mod Type"):
             dpg.add_text("New name of Mod Type: " + str(message))
-
-            dpg.add_button(label="Go Back to Modify Mod Type", callback=lambda: dpg.delete_item("Modify Mod Type"))
+            dpg.delete_item("Modify Mod Type")
+            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Mod Type"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -355,7 +360,8 @@ def ChooseModTypeForMod(sender, app_data, user_data):
             for i in modTypeList:
                 dpg.add_button(label=i, user_data=i, callback=ChooseMod)
 
-            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Show Mod Types for Mods"))
+            dpg.add_button(label="Go Back to Delete or Modify",
+                           callback=lambda: dpg.delete_item("Show Mod Types for Mods"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -421,13 +427,13 @@ def DeleteMod(sender, app_data, user_data):
         if user_data in modIDList:
             message = "Issue deleting Mod: " + str(errMessage)
         else:
-            message = "Mod number " + str(user_data) + " successfully deleted\n" \
-                        "Unable to modify Mod that doesn't exist.\n" \
-                        "Return to Delete or Modify Menu to reflect changes."
+            message = "Mod number " + str(user_data) + " successfully deleted"
+            dpg.delete_item("Modify Mod")
+            dpg.delete_item("Show Mods")
 
         with dpg.window(label="Delete Mod Confirm", width=600, height=300, tag="Delete Mod Confirm"):
             dpg.add_text(message)
-            dpg.add_button(label="Go Back to Modify Mod", callback=lambda: dpg.delete_item("Delete Mod Confirm"))
+            dpg.add_button(label="Go Back to Show Mod Types", callback=lambda: dpg.delete_item("Delete Mod Confirm"))
     except Exception as e:
         logging.debug("Error: %r", e)
 
