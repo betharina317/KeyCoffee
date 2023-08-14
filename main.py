@@ -3,9 +3,13 @@ import dearpygui.dearpygui as dpg
 import dearpygui.demo as demo
 
 
+    # check = check_password(pin, hash)
+    # print("First check = ")
+    # print(check)
 
 # Main
 Menu()
+
 
 # # dpg demo
 # dpg.create_context()

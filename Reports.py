@@ -20,7 +20,7 @@ def ReportsMenu(sender, app_data, user_data):
             dpg.add_button(label="Order Details Report", callback=GenOrderDetailsReport, tag="Order Details Report")
             dpg.add_button(label="Custom Mods Report", callback=GenCustomModsReport, tag="Custom Mods Report")
 
-            dpg.add_button(label="Back to Main Menu", user_data=None, callback=lambda: dpg.delete_item("Reports Menu"))
+            dpg.add_button(label="Back to Admin Menu", user_data=None, callback=lambda: dpg.delete_item("Reports Menu"))
     except Exception as e:
         logging.debug("Error: %r", e)
 

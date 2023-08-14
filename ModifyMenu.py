@@ -23,7 +23,7 @@ def ChooseCat():
             logging.debug("Error: %r", e)
 
         dpg.add_button(label="Add Item", callback=AddItem)
-        dpg.add_button(label="Go Back to Main", callback=lambda: dpg.delete_item("Cat Menu"))
+        dpg.add_button(label="Go Back to Admin Menu", callback=lambda: dpg.delete_item("Cat Menu"))
 
 
 def ChooseItem(sender, app_data, user_data):

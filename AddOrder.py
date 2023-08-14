@@ -19,6 +19,7 @@ customModsList = []
 def ChooseCatOrder():
     try:
         with dpg.window(label="Cat Menu", width=600, height=300, tag="Cat Menu"):
+            dpg.delete_item("Verify Login Window")
             dpg.add_text("Select which category describes the item to order:")
 
             # Create button for each menu category in DB

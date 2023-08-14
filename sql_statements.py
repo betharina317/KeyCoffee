@@ -199,6 +199,13 @@ def SelectMostFrequentCustomMod(startDate, endDate):
     result = QueryDB(query, startDate, endDate)
     return result
 
+
+def SelectHashOwnerAccess(hash):
+    query = "select OwnerAccess from Login_LU where hash = (?)"
+
+    result = QueryDB(query, hash)
+    return result
+
 # ############# VERIFY STATEMENTS ######################
 
 
@@ -229,6 +236,24 @@ def ValidModChoices(type_input):
     return result
 
 
+def ValidLoginChoices():
+    # Add available Mod Type IDs to variable for verification purposes
+    query = "select hash from Login_LU"
+    listOfTuples = QueryDB(query)
+    # converts list of tuples to list of ints for validation purposes
+    result = [i[0] for i in listOfTuples]
+    return result
+
+
+def ValidLoginNameChoices():
+    # Add available Mod Type IDs to variable for verification purposes
+    query = "select Name from Login_LU"
+    listOfTuples = QueryDB(query)
+    # converts list of tuples to list of ints for validation purposes
+    result = [i[0] for i in listOfTuples]
+    return result
+
+
 # #############  DELETE STATEMENTS ######################
 
 
@@ -253,6 +278,11 @@ def DeleteModSQL(mod_input):
     return result
 
 
+def DeleteLoginSQL(name):
+    # Deletes mod from Item_Mod Table
+    query = "delete from Login_LU where Name = (?)"
+    result = QueryDB(query, name)
+    return result
 # ############# INSERT STATEMENTS ######################
 
 
@@ -311,6 +341,12 @@ def InsertCustomModSQL(description_input): # AUTO FILLS IN CUSTOM MOD ID '97'
     result = InsertQueryDB(query, customModID, description_input)
     return result
 
+
+def InsertLogin(name, hash, ownerAccess):
+    query = "INSERT INTO Login_LU (Name, Hash, OwnerAccess) VALUES (?, ?, ?)"
+    result = InsertQueryDB(query, name, hash, ownerAccess)
+    return result
+
 # ############# UPDATE STATEMENTS ######################
 
 
@@ -342,3 +378,5 @@ def UpdateModAddedCost(new_price, mod_input):
     query = "update Item_Mod set AddedCost = (?) where ID = (?)"
     result = QueryDB(query, new_price, mod_input)
     return result
+
+
