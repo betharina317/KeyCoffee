@@ -1,5 +1,5 @@
 # Elizabeth Vickerman- KeyCoffee Project
-# Last Edited 6/23/23
+# Last Edited 8/14/23
 # Module file to define Menu Function
 
 from AddOrder import *
@@ -10,6 +10,7 @@ import dearpygui.dearpygui as dpg
 # Menu Function
 def Menu():
     try:
+        # Initialize GUI main window.  All other windows "pop up" over main window.
         dpg.create_context()
         dpg.create_viewport(title='Key Coffee POS', width=600, height=400)
 
@@ -22,5 +23,6 @@ def Menu():
         dpg.show_viewport()
         dpg.start_dearpygui()
         dpg.destroy_context()
+
     except Exception as e:
         logging.debug("Error: %r", e)

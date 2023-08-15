@@ -28,12 +28,14 @@ def ChooseCatOrder():
                 dpg.add_button(label=i, user_data=i, callback=ChooseItemOrder)
 
             dpg.add_button(label="Go Back to Main", callback=lambda: dpg.delete_item("Cat Menu"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ChooseItemOrder(sender, app_data, user_data):
     try:
+        # Create list of items given the category ID
         cat_input = user_data[0]
         itemList = SelectAllItem(cat_input)
 
@@ -45,14 +47,18 @@ def ChooseItemOrder(sender, app_data, user_data):
                 dpg.add_button(label=i, user_data=i, callback=ChooseModOrder)
 
             dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Item Menu"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ChooseModOrder(sender, app_data, user_data):
     try:
+        # Assign Item ID to variable
         item_input = user_data[0]
+        # Append cost of item to tempCostList
         tempCostList.append(user_data[2])
+        # Create list of mod types given item ID
         modTypeList = SelectAllSpecifiedModType(item_input)
 
         with dpg.window(label="Mod Menu", width=600, height=300, tag="Mod Menu"):
@@ -74,6 +80,7 @@ def ChooseModOrder(sender, app_data, user_data):
             dpg.add_button(label="Add Item to Order", user_data=item_input, callback=AddItemToOrder)
             dpg.add_button(label="Order Complete", user_data=None, callback=CompleteOrder)
             dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Mod Menu"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -81,23 +88,24 @@ def ChooseModOrder(sender, app_data, user_data):
 def AddMod(sender, app_data, user_data):
     try:
         name = dpg.get_value(sender)
-        # Adds mod to orderedItem Dic
+        # Adds mod to orderedItem Dict
         modID = SelectModIDSpecifiedModType(name, user_data)
         tempModsList.append(modID)
 
         # Adds AddedCost to tempCostList
         modCost = SelectModCostSpecifiedModType(name, user_data)
         tempCostList.append(modCost)
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def AddCustomMod(sender, app_data, user_data):
     try:
-        # Checks if mod is custom
+        # Get custom mod value
         description = dpg.get_value("Custom Mod")
 
-        # If it is, Add Custom Mod to table (if not exists)
+        # Add Custom Mod to table (if not exists)
         testCustomModIDExists = SelectExistingCustomMod(description)
         if not testCustomModIDExists:
             CustomModID = InsertCustomModSQL(description)
@@ -116,6 +124,7 @@ def AddCustomMod(sender, app_data, user_data):
 
         # Add Custom Mod Desc to list
         customModsList.append(CustomModID)
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -130,7 +139,7 @@ def AddItemToOrder(sender, app_data, user_data):
             modList.append(i)
         orderedItemMods.append(tempOrderedItemMods)
 
-        # add to orderedItemPrice dice
+        # add to orderedItemPrice dict
         totalPrice = sum(tempCostList)
         tempOrderedItemPrice = {}
         tempOrderedItemPrice.update({user_data: totalPrice})
@@ -145,12 +154,14 @@ def AddItemToOrder(sender, app_data, user_data):
             dpg.add_text("Item added to cart!")
 
             dpg.add_button(label="Close", user_data=None, callback=lambda: dpg.delete_item("Add Item Confirm"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
     try:
+        # Combines values in ordered Item Price to assign total order price to variable
         order_price_input_list = []
         for i in orderedItemPrice:
             order_price_input_list.append(sum(i.values()))
@@ -201,9 +212,11 @@ def CompleteOrder(sender, app_data, user_data): # UPDATES DB!!
         orderedItemMods.clear()
         orderedItemPrice.clear()
 
+        # Opens confirmation window and prints either newOrderID or error message if failed
         with dpg.window(label="Insert Order", width=600, height=300, tag="Insert Order"):
             dpg.add_text("Order successfully added and new ID = " + str(newOrderID))
 
             dpg.add_button(label="Go Back Mod Menu", user_data=None, callback=lambda: dpg.delete_item("Insert Order"))
+
     except Exception as e:
         logging.debug("Error: %r", e)

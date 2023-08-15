@@ -8,85 +8,94 @@ import dearpygui.dearpygui as dpg
 
 # ############### Modify Item Main Windows #########
 def ChooseCat():
-    # Delete previous window
-    dpg.delete_item("Verify Login Window")
-    with dpg.window(label="Cat Menu", width=600, height=300, tag="Cat Menu"):
-        dpg.add_text("Select which category describes the item you want to modify,")
-        dpg.add_text("or select Add Item: ")
+    try:
+        with dpg.window(label="Cat Menu", width=600, height=300, tag="Cat Menu"):
+            dpg.delete_item("Verify Login Window")
 
-        # Create button for each menu category in DB
-        try:
+            dpg.add_text("Select which category describes the item you want to modify,")
+            dpg.add_text("or select Add Item: ")
+
+            # Create button for each menu category in DB
             MenuCatList = SelectAllMenuCatSQL()
             for i in MenuCatList:
                 dpg.add_button(label=i, user_data=i, callback=ChooseItem)
-        except Exception as e:
-            logging.debug("Error: %r", e)
+            dpg.add_button(label="Add Item", callback=AddItem)
 
-        dpg.add_button(label="Add Item", callback=AddItem)
-        dpg.add_button(label="Go Back to Admin Menu", callback=lambda: dpg.delete_item("Cat Menu"))
+            dpg.add_button(label="Go Back to Admin Menu", callback=lambda: dpg.delete_item("Cat Menu"))
+
+    except Exception as e:
+        logging.debug("Error: %r", e)
 
 
 def ChooseItem(sender, app_data, user_data):
 
     try:
+        # Assign chosen category to variable and make list of items under category in DB
         cat_input = user_data[0]
         itemList = SelectIDNameItem(cat_input)
+
+        with dpg.window(label="Item Menu", width=600, height=300, tag="Item Menu"):
+            dpg.add_text("Select which item you want to modify:")
+
+            # Create button for every item under selected category
+            for i in itemList:
+                dpg.add_button(label=i, user_data=i, callback=DeleteOrModify)
+
+            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Item Menu"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
-
-    with dpg.window(label="Item Menu", width=600, height=300, tag="Item Menu"):
-        dpg.add_text("Select which item you want to modify:")
-
-        # Create button for every item under selected category
-        for i in itemList:
-            dpg.add_button(label=i, user_data=i, callback=DeleteOrModify)
-
-        dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Item Menu"))
 
 
 def DeleteOrModify(sender, app_data, user_data):
     try:
+        # Assign chosen item to variable
         itemID = int(user_data[0])
-        dpg.delete_item("Item Menu")
+
+        with dpg.window(label="Delete or Modify", width=600, height=300, tag="Delete Or Modify"):
+            dpg.delete_item("Item Menu")
+
+            # User chooses action to take with selected item
+            dpg.add_text("Choose an option: ")
+            dpg.add_button(label="Delete Item", user_data=itemID, callback=DeleteItem)
+            dpg.add_button(label="Modify Item", user_data=itemID, callback=ModifyItem)
+            dpg.add_button(label="Modify Item Mod Types", user_data=itemID, callback=ChooseModType)
+            dpg.add_button(label="Modify Item Mods", user_data=itemID, callback=ChooseModTypeForMod)
+            dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Delete Or Modify"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
-
-    with dpg.window(label="Delete or Modify", width=600, height=300, tag="Delete Or Modify"):
-        # User chooses action to take with selected item
-        dpg.add_text("Choose an option: ")
-        dpg.add_button(label="Delete Item", user_data=itemID, callback=DeleteItem)
-        dpg.add_button(label="Modify Item", user_data=itemID, callback=ModifyItem)
-        dpg.add_button(label="Modify Item Mod Types", user_data=itemID, callback=ChooseModType)
-        dpg.add_button(label="Modify Item Mods", user_data=itemID, callback=ChooseModTypeForMod)
-        dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Delete Or Modify"))
 
 
 # ########## Add Item Windows ############################
 
 def AddItem():
-    with dpg.window(label="New Cat Menu", width=600, height=300, tag="New Cat Menu"):
-        dpg.add_text("Select which category best describes the item you want to add:")
+    try:
+        with dpg.window(label="New Cat Menu", width=600, height=300, tag="New Cat Menu"):
+            dpg.add_text("Select which category best describes the item you want to add:")
 
-        try:
             # Create button for each menu category in DB
             MenuCatList = SelectAllMenuCatSQL()
             for i in MenuCatList:
                 dpg.add_button(label=i, user_data=i, callback=InsertItem)
-        except Exception as e:
-            logging.debug("Error: %r", e)
 
-        dpg.add_button(label="Go Back to Modify Menu", callback=lambda: dpg.delete_item("New Cat Menu"))
+            dpg.add_button(label="Go Back to Modify Menu", callback=lambda: dpg.delete_item("New Cat Menu"))
+
+    except Exception as e:
+        logging.debug("Error: %r", e)
 
 
 def InsertItem(sender, app_data, user_data):
     try:
-        dpg.delete_item("New Cat Menu")
         with dpg.window(label="Show Items", width=600, height=300, tag="Show Items"):
-            # Show current items
-            dpg.add_text("Current items in this category:")
+            dpg.delete_item("New Cat Menu")
 
+            # Assign category choice to variable and create list of items under category
             cat_input = user_data[0]
             itemList = SelectIDNameItem(cat_input)
+
+            # Show current items
+            dpg.add_text("Current items in this category:")
             for i in itemList:
                 dpg.add_text(i)
 
@@ -98,6 +107,7 @@ def InsertItem(sender, app_data, user_data):
             dpg.add_button(label="Add Item", user_data=user_data, callback=InsertModType)
 
             dpg.add_button(label="Go Back to Modify Menu", callback=lambda: dpg.delete_item("Show Items"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -117,6 +127,7 @@ def InsertModType(sender, app_data, user_data):
 
         with dpg.window(label="Insert Mod Type", width=600, height=300, tag="Insert Mod Type"):
             dpg.delete_item("Show Items")
+
             dpg.add_text("Item successfully added and new ID = " + str(newItemID))
 
             # Enter new mod type info
@@ -126,11 +137,12 @@ def InsertModType(sender, app_data, user_data):
 
             dpg.add_button(label="Go Back to Modify Menu", user_data=None,
                            callback=lambda: dpg.delete_item("Insert Mod Type"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
-# This function called from multiple functions (re-used)
+# This function called from 2 functions (re-used)
 def InsertMods(sender, app_data, user_data):
     try:
         # Insert Mod Type Info into DB
@@ -150,11 +162,12 @@ def InsertMods(sender, app_data, user_data):
 
             dpg.add_button(label="Go Back to Mod Type", user_data=None,
                            callback=lambda: dpg.delete_item("Insert Mods"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
-# This function called from multiple functions (re-used)
+# This function called from 2 functions (re-used)
 def InsertModConfirm(sender, app_data, user_data):
     try:
         # Insert Mod info into DB
@@ -168,6 +181,7 @@ def InsertModConfirm(sender, app_data, user_data):
 
             dpg.add_button(label="Go Back to Add Mod", user_data=None,
                            callback=lambda: dpg.delete_item("Insert Mod Confirm"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -177,21 +191,24 @@ def InsertModConfirm(sender, app_data, user_data):
 
 def DeleteItem(sender, app_data, user_data):
     try:
+        # Potential error message stored in variable after deleting item
         errMessage = DeleteItemSQL(user_data)
+        # Make list of item IDs in table after deletion
         itemIDList = ValidItemChoices()
 
-        # Checks for error message deleting item
-        # If none: confirms deletion
+        # Checks for error message deleting item. If none, confirms deletion
         if user_data in itemIDList:
             message = "Issue deleting item: " + str(errMessage)
         else:
             message = "Item number " + str(user_data) + " successfully deleted\n" \
 
         with dpg.window(label="Delete Confirm", width=600, height=300, tag="Delete Confirm"):
-            dpg.add_text(message)
             dpg.delete_item("Delete Or Modify")
 
+            dpg.add_text(message)
+
             dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Delete Confirm"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -201,9 +218,13 @@ def DeleteItem(sender, app_data, user_data):
 
 def ModifyItem(sender, app_data, user_data):
     try:
+        # Assign item info to variable
         itemInfo = SelectNamePriceSpecifiedItem(user_data)
-        dpg.delete_item("Delete Or Modify")
+
         with dpg.window(label="Modify Item", width=600, height=300, tag="Modify Item"):
+            dpg.delete_item("Delete Or Modify")
+
+            #Show current item info
             dpg.add_text("Current name and price of item: " + str(itemInfo))
 
             # Enter new info to update specified value in DB
@@ -215,48 +236,57 @@ def ModifyItem(sender, app_data, user_data):
             dpg.add_button(label="Change Price", user_data=user_data, callback=ModifyItemPrice)
 
             dpg.add_button(label="Go Back to Categories", callback=lambda: dpg.delete_item("Modify Item"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ModifyItemName(sender, app_data, user_data):
     try:
-        # Updates Item name in DB
+        # Updates Item name in DB and gets updated info
         name_input = dpg.get_value("name_input")
         errMessage = UpdateItemName(name_input, user_data)
         newItemInfo = SelectNameSpecifiedItem(user_data)
 
-        # Checks for error message updating item name
-        # If none: confirms deletion
-        if len(errMessage) == 0:
-            message = newItemInfo
-        else:
-            message = errMessage
         with dpg.window(label="Modify Item Name", width=600, height=300, tag="Modify Item Name"):
-            dpg.add_text("New name of item: " + str(message))
             dpg.delete_item("Modify Item")
+
+            # Checks for error message updating item name
+            # If none: confirms deletion
+            if len(errMessage) == 0:
+                message = newItemInfo
+            else:
+                message = errMessage
+
+            dpg.add_text("New name of item: " + str(message))
+
             dpg.add_button(label="Go Back to Modify Item", callback=lambda: dpg.delete_item("Modify Item Name"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ModifyItemPrice(sender, app_data, user_data):
     try:
-        # Updates item price in DB
+        # Updates item price in DB and gets updated info
         price_input = dpg.get_value("price_input")
         errMessage = UpdateItemPrice(price_input, user_data)
         newItemInfo = SelectNamePriceSpecifiedItem(user_data)
 
-        # Checks for error message deleting Item price
-        # If none: confirms deletion
-        if len(errMessage) == 0:
-            message = newItemInfo
-        else:
-            message = errMessage
         with dpg.window(label="Modify Item Price", width=600, height=300, tag="Modify Item Price"):
-            dpg.add_text("New price of item: " + str(message))
             dpg.delete_item("Modify Item")
+
+            # Checks for error message deleting Item price
+            # If none: confirms deletion
+            if len(errMessage) == 0:
+                message = newItemInfo
+            else:
+                message = errMessage
+
+            dpg.add_text("New price of item: " + str(message))
+
             dpg.add_button(label="Go Back to Modify Item", callback=lambda: dpg.delete_item("Modify Item Price"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -278,18 +308,21 @@ def ChooseModType(sender, app_data, user_data):
             dpg.add_button(label="Add New Mod Type", user_data=user_data, callback=InsertMods)
 
             dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Show Mod Types"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ModifyModType(sender, app_data, user_data):
     try:
+        # Assign modTypeID to variable and obtain current Mod Type info
         type_input = user_data[0]
-
-        # Show current Mod Type info
         itemInfo = SelectNameSpecifiedModType(type_input)
-        dpg.delete_item("Show Mod Types")
+
         with dpg.window(label="Modify Mod Type", width=600, height=300, tag="Modify Mod Type"):
+            dpg.delete_item("Show Mod Types")
+
+            # Show current mod type input
             dpg.add_text("Current name of Mod Type: " + str(itemInfo))
 
             # Offer to delete Mod Type
@@ -301,30 +334,33 @@ def ModifyModType(sender, app_data, user_data):
             dpg.add_input_text(tag="name_input")
             dpg.add_button(label="Change Name", user_data=type_input, callback=ModifyModTypeName)
 
-            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Mod Types"))
+            dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Mod Type"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def DeleteModType(sender, app_data, user_data):
     try:
-        # Delete Mod Type in DB
+        # Delete Mod Type in DB and get current modTypeIDs in table after
         errMessage = DeleteModTypeSQL(user_data)
         typeIDList = ValidModTypeChoices(user_data)
 
-        # Checks for error message deleting mod type
-        # If none: confirms deletion
+        # Checks for error message deleting mod type.  If none, confirms deletion
         if user_data in typeIDList:
             message = "Issue deleting Mod Type: " + str(errMessage)
         else:
             message = "Mod type number " + str(user_data) + " successfully deleted\n" \
 
         with dpg.window(label="Delete Mod Type Confirm", width=600, height=300, tag="Delete Mod Type Confirm"):
-            dpg.add_text(message)
             dpg.delete_item("Modify Mod Type")
             dpg.delete_item("Show Mod Types")
+
+            dpg.add_text(message)
+
             dpg.add_button(label="Go Back to Delete or Modify",
                            callback=lambda: dpg.delete_item("Delete Mod Type Confirm"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -336,16 +372,19 @@ def ModifyModTypeName(sender, app_data, user_data):
         errMessage = UpdateItemModType(name_input, user_data)
         newItemInfo = SelectNameSpecifiedModType(user_data)
 
-        # Checks for error message updating Mod Type name
-        # If none: confirms update
-        if len(errMessage) == 0:
-            message = newItemInfo
-        else:
-            message = errMessage
         with dpg.window(label="Modify Mod Type", width=600, height=300, tag="Modify Mod Type"):
-            dpg.add_text("New name of Mod Type: " + str(message))
             dpg.delete_item("Modify Mod Type")
+
+            # Checks for error message updating Mod Type name.  If none, confirms update
+            if len(errMessage) == 0:
+                message = newItemInfo
+            else:
+                message = errMessage
+
+            dpg.add_text("New name of Mod Type: " + str(message))
+
             dpg.add_button(label="Go Back to Delete or Modify", callback=lambda: dpg.delete_item("Modify Mod Type"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -353,25 +392,31 @@ def ModifyModTypeName(sender, app_data, user_data):
 # ########## Modify Item Mods Windows ############################
 def ChooseModTypeForMod(sender, app_data, user_data):
     try:
+        # Create list of mod types available under item ID in DB
+        modTypeList = SelectAllSpecifiedModType(user_data)
+
         with dpg.window(label="Show Mod Types for Mods", width=600, height=300, tag="Show Mod Types for Mods"):
             dpg.add_text("Select which Mod Type Mod fits under: ")
-            modTypeList = SelectAllSpecifiedModType(user_data)
+
             # Create button for every available mod type under specified item in DB
             for i in modTypeList:
                 dpg.add_button(label=i, user_data=i, callback=ChooseMod)
 
             dpg.add_button(label="Go Back to Delete or Modify",
                            callback=lambda: dpg.delete_item("Show Mod Types for Mods"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ChooseMod(sender, app_data, user_data):
     try:
+        # Assigns chosen ModTypeID to variable and creates list of mods under mod type
         type_input = user_data[0]
+        modList = SelectAllSpecifiedMod(type_input)
+
         with dpg.window(label="Show Mods", width=600, height=300, tag="Show Mods"):
             dpg.add_text("Select which Mod Type to modify: ")
-            modList = SelectAllSpecifiedMod(type_input)
 
             # Create button for every mod available under specified mod type in DB
             for i in modList:
@@ -385,19 +430,19 @@ def ChooseMod(sender, app_data, user_data):
             dpg.add_button(label="Add New Mod", user_data=type_input, callback=InsertModConfirm)
 
             dpg.add_button(label="Go Back to Show Mod Types", callback=lambda: dpg.delete_item("Show Mods"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 def ModifyMod(sender, app_data, user_data):
     try:
+        # Assigns chosen ModID to variable and creates list of info under ModID
         mod_input = user_data[0]
-
-        # Show current Mod info
         itemInfo = SelectNameCostSpecifiedMod(mod_input)
+
         with dpg.window(label="Modify Mod", width=600, height=300, tag="Modify Mod"):
             dpg.add_text("Current name of Mod: " + str(itemInfo))
-            dpg.add_text("(Recent changes may not be reflected)\n")
 
             # Offer to delete Mod
             dpg.add_text("Delete Mod: ")
@@ -412,6 +457,7 @@ def ModifyMod(sender, app_data, user_data):
             dpg.add_button(label="Change Added Cost", user_data=mod_input, callback=ModifyModCost)
 
             dpg.add_button(label="Go Back to Choose Mod", callback=lambda: dpg.delete_item("Modify Mod"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -422,8 +468,7 @@ def DeleteMod(sender, app_data, user_data):
         errMessage = DeleteModSQL(user_data)
         modIDList = ValidModChoices(user_data)
 
-        # Checks for error message deleting mod
-        # If none: confirms deletion
+        # Checks for error message deleting mod. If none, confirms deletion
         if user_data in modIDList:
             message = "Issue deleting Mod: " + str(errMessage)
         else:
@@ -433,7 +478,9 @@ def DeleteMod(sender, app_data, user_data):
 
         with dpg.window(label="Delete Mod Confirm", width=600, height=300, tag="Delete Mod Confirm"):
             dpg.add_text(message)
+
             dpg.add_button(label="Go Back to Show Mod Types", callback=lambda: dpg.delete_item("Delete Mod Confirm"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -445,16 +492,17 @@ def ModifyModName(sender, app_data, user_data):
         errMessage = UpdateModName(name_input, user_data)
         newItemInfo = SelectNameCostSpecifiedMod(user_data)
 
-        # Checks for error message updating Mod name
-        # If none: confirms update
+        # Checks for error message updating Mod name. If none, confirms update
         if len(errMessage) == 0:
             message = newItemInfo
         else:
             message = errMessage
+
         with dpg.window(label="Modify Mod Name", width=600, height=300, tag="Modify Mod Name"):
             dpg.add_text("New name of Mod: " + str(message))
 
             dpg.add_button(label="Go Back to Modify Mod", callback=lambda: dpg.delete_item("Modify Mod Name"))
+
     except Exception as e:
         logging.debug("Error: %r", e)
 
@@ -466,15 +514,16 @@ def ModifyModCost(sender, app_data, user_data):
         errMessage = UpdateModAddedCost(cost_input, user_data)
         newItemInfo = SelectNameCostSpecifiedMod(user_data)
 
-        # Checks for error message updating Mod price
-        # If none: confirms update
+        # Checks for error message updating Mod price. If none, confirms update
         if len(errMessage) == 0:
             message = newItemInfo
         else:
             message = errMessage
+
         with dpg.window(label="Modify Mod Cost", width=600, height=300, tag="Modify Mod Cost"):
             dpg.add_text("New cost of Mod: " + str(message))
 
             dpg.add_button(label="Go Back to Modify Mod", callback=lambda: dpg.delete_item("Modify Mod Cost"))
+
     except Exception as e:
         logging.debug("Error: %r", e)

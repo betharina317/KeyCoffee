@@ -20,3 +20,6 @@
 08/14/2023 04:08:14 PM Error: TypeError("object of type 'NoneType' has no len()")
 08/14/2023 04:11:19 PM Error: TypeError("object of type 'NoneType' has no len()")
 08/14/2023 04:13:31 PM Error: TypeError("object of type 'NoneType' has no len()")
+08/15/2023 09:15:38 AM Error: SystemError('<built-in function pop_container_stack> returned a result with an exception set')
+08/15/2023 10:51:23 AM Error: SystemError('<built-in function pop_container_stack> returned a result with an exception set')
+08/15/2023 10:53:42 AM Error: SystemError('<built-in function pop_container_stack> returned a result with an exception set')
