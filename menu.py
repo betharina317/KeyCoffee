@@ -15,8 +15,8 @@ def Menu():
         dpg.create_viewport(title='Key Coffee POS', width=600, height=400)
 
         with dpg.window(tag="Main Menu"):
-            dpg.add_button(label="Add Order", user_data=ChooseCatOrder, callback=EnterLoginWindow, tag="Add Order")
-            dpg.add_button(label="Admin Menu", user_data=VerifyOwnerAccess, callback=EnterLoginWindow, tag="Admin Menu")
+            dpg.add_button(label="Add Order", user_data=ChooseCatOrder, callback=EnterPinWindow, tag="Add Order")
+            dpg.add_button(label="Admin Menu", user_data=VerifyOwnerAccess, callback=EnterPinWindow, tag="Admin Menu")
 
         dpg.set_primary_window("Main Menu", True)
         dpg.setup_dearpygui()

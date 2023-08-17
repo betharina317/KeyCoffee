@@ -1,5 +1,5 @@
 # Elizabeth Vickerman- KeyCoffee Project
-# Last Edited 7/27/23
+# Last Edited 8/16/23
 # Module file to define SQL Functions
 
 import sqlite3
@@ -80,7 +80,7 @@ def SelectAllMenuCatSQL():
 
 def SelectAllSpecifiedMod(type_input):
     # Displays Mod Options under type
-    query = "select ID, Name from Item_Mod where ItemModTypeID = (?)"
+    query = "select ID, Name, AddedCost from Item_Mod where ItemModTypeID = (?)"
     result = QueryDB(query, type_input)
     return result
 
@@ -137,16 +137,10 @@ def SelectIDNameItem(cat_input):
     return result
 
 
-def SelectModCostSpecifiedModType(name, type_input): # KEEP
-    query = "select AddedCost from Item_Mod where Name = (?) and ItemModTypeID = (?)"
-    result = QueryDB(query, name, type_input)
-    return result[0][0]
-
-
-def SelectModIDSpecifiedModType(name, type_input): # KEEP
-    query = "select ID from Item_Mod where Name = (?) and ItemModTypeID = (?)"
-    result = QueryDB(query, name, type_input)
-    return result[0][0]
+def SelectModIDSpecifiedNameModTypeID(modName, modTypeID):
+    query = "select ID, AddedCost from Item_Mod where Name = (?) and ItemModTypeID = (?)"
+    result = QueryDB(query, modName, modTypeID)
+    return result
 
 
 def SelectMostFrequentCustomMod(startDate, endDate):

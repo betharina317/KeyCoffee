@@ -1,5 +1,5 @@
 # Elizabeth Vickerman- KeyCoffee Project
-# Last Edited 8/2/23
+# Last Edited 8/16/23
 # Module file to define password Functions
 
 from Reports import *
@@ -10,35 +10,35 @@ import bcrypt
 
 # ################ User Authentication Functions ##################################
 # # Re-usable Code!!
-def check_password(plain_text_password, hashed_password):
+def checkPin(plainTextPin, hashedPin):
     try:
         # Check hashed password. Using bcrypt, the salt is saved into the hash itself
-        return bcrypt.checkpw(plain_text_password, hashed_password)
+        return bcrypt.checkpw(plainTextPin, hashedPin)
 
     except Exception as e:
         logging.debug('Error: r%', e)
 
 
 # # Re-Used Code and User Verification!!
-def EnterLoginWindow(sender, app_data, user_data):
+def EnterPinWindow(sender, app_data, user_data):
     try:
-        with dpg.window(label="Enter Login Window", width=600, height=300, tag="Enter Login Window"):
+        with dpg.window(label="Enter Pin Window", width=600, height=300, tag="Enter Pin Window"):
 
             # Input pin to check for authorization
             dpg.add_text("Enter Authorized PIN for Access:")
             dpg.add_input_text(tag="Pin Verification", decimal=True)
-            dpg.add_button(label="Login", user_data=user_data, callback=VerifyLoginWindow)
+            dpg.add_button(label="Login", user_data=user_data, callback=VerifyPinWindow)
 
-            dpg.add_button(label="Close", callback=lambda: dpg.delete_item("Enter Login Window"))
+            dpg.add_button(label="Close", callback=lambda: dpg.delete_item("Enter Pin Window"))
 
     except Exception as e:
         logging.debug("Error: %r", e)
 
 
 # # Re-Usable Code and User Verification!!
-def VerifyLoginWindow(sender, app_data, user_data):
+def VerifyPinWindow(sender, app_data, user_data):
     try:
-        with dpg.window(label="Verify Login Window", width=600, height=300, tag="Verify Login Window"):
+        with dpg.window(label="Verify Pin Window", width=600, height=300, tag="Verify Pin Window"):
 
             # Retrieve and encode pin for use in check_password()
             pin = dpg.get_value("Pin Verification")
@@ -49,12 +49,12 @@ def VerifyLoginWindow(sender, app_data, user_data):
 
             # Initially set checkResult to False.  Change to true if pin matches.
             checkResult = False
-            for i in validPins:
-                check = check_password(pin, i)
+            for hashedPin in validPins:
+                check = checkPin(pin, hashedPin)
                 if check:
                     checkResult = True
                     # Assign correct i to hash variable
-                    hash = i
+                    hash = hashedPin
                 else:
                     pass
 
@@ -62,11 +62,11 @@ def VerifyLoginWindow(sender, app_data, user_data):
             if checkResult:
                 dpg.add_text("Pin Verified.")
                 dpg.add_button(label="Continue", user_data=hash, callback=user_data)
-                dpg.delete_item("Enter Login Window")
+                dpg.delete_item("Enter Pin Window")
             else:
                 dpg.add_text("Verification failed.  Please try new pin.")
 
-            dpg.add_button(label="Go Back", callback=lambda: dpg.delete_item("Verify Login Window"))
+            dpg.add_button(label="Go Back", callback=lambda: dpg.delete_item("Verify Pin Window"))
 
     except Exception as e:
         logging.debug("Error: %r", e)
@@ -75,7 +75,7 @@ def VerifyLoginWindow(sender, app_data, user_data):
 def VerifyOwnerAccess(sender, app_data, user_data):
     try:
         with dpg.window(label="Verify Access Window", width=600, height=300, tag="Verify Access Window"):
-            dpg.delete_item("Verify Login Window")
+            dpg.delete_item("Verify Pin Window")
 
             # Retrieves OwnerAccess value from Login Table in DB
             hash = user_data
@@ -104,11 +104,10 @@ def AdminMenu(sender, app_data, user_data):
 
             # Admin Menu Options
             dpg.add_button(label="Modify Menu", callback=ChooseCat, tag="Modify Menu")
-            dpg.add_button(label="Download Reports", callback=ReportsMenu, tag="Download Reports")
+            dpg.add_button(label="Download Reports", callback=EnterDateRange, tag="Download Reports")
             dpg.add_button(label="Edit Authorized Users", callback=EditUsers, tag="Edit Authorized Users")
 
-            dpg.add_button(label="Back to Main Menu", user_data=None,
-                           callback=lambda: dpg.delete_item("Administrator Menu"))
+            dpg.add_button(label="Back to Main Menu", callback=lambda: dpg.delete_item("Administrator Menu"))
 
     except Exception as e:
         logging.debug("Error: %r", e)
@@ -125,7 +124,7 @@ def HashPin(pin):
 def EditUsers(sender, app_data, user_data):
     try:
         with dpg.window(label="Edit Users", width=600, height=300, tag="Edit Users"):
-            dpg.delete_item("Verify Login Window")
+            dpg.delete_item("Verify Pin Window")
 
             # Receives Employee name to delete from DB or goes to add new user
             dpg.add_text("Enter Employee Name to Delete:")
@@ -188,6 +187,7 @@ def EnterNewUser(sender, app_data, user_data):
         logging.debug("Error: %r", e)
 
 
+# #### FIX ME !!!!
 def AddNewUser(sender, app_data, user_data): # UPDATES DB
     try:
         # Retrieves values to insert into Login table
@@ -205,24 +205,25 @@ def AddNewUser(sender, app_data, user_data): # UPDATES DB
             with dpg.window(label="Bad pin", width=600, height=300, tag="Bad pin"):
                 dpg.add_text("Pin needs to be 4 numbers.  Please try again")
                 dpg.add_button(label="Go back", callback=lambda: dpg.delete_item("Bad pin"))
-        elif ownerAccess == 'Basic Access':
-            ownerAccess = 0
         else:
-            ownerAccess = 1
+            # Encode/hash username if other than emp
+            hash = HashPin(pin)
 
-        # Encode/hash username if other than emp
-        hash = HashPin(pin)
+            if ownerAccess == 'Basic Access':
+                ownerAccess = 0
+            else:
+                ownerAccess = 1
 
-        # Insert values into Login table
-        result = InsertLogin(name, hash, ownerAccess)
+            # Insert values into Login table
+            result = InsertLogin(name, hash, ownerAccess)
 
-        with dpg.window(label="User Added", width=600, height=300, tag="User Added"):
-            dpg.delete_item("Enter User")
+            with dpg.window(label="User Added", width=600, height=300, tag="User Added"):
+                dpg.delete_item("Enter User")
 
-            # Prints confirmation or error message
-            dpg.add_text("User added successfully!  New ID = " + str(result))
+                # Prints confirmation or error message
+                dpg.add_text("User added successfully!  New ID = " + str(result))
 
-            dpg.add_button(label="Go back to Edit Users", callback=lambda: dpg.delete_item("User Added"))
+                dpg.add_button(label="Go back to Edit Users", callback=lambda: dpg.delete_item("User Added"))
 
     except Exception as e:
         logging.debug("Error: %r", e)
